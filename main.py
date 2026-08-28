@@ -69,8 +69,11 @@ def ask(payload: Question):
         raise HTTPException(status_code=400, detail="question must not be empty")
 
     if client is None:
+        # Deliberately 500, not 503. App Platform's edge intercepts 502, 503
+        # and 504 from the app and replaces the body with its own error page,
+        # so the JSON detail never reaches the caller.
         raise HTTPException(
-            status_code=503,
+            status_code=500,
             detail="ANTHROPIC_API_KEY is not set on this deployment",
         )
 
@@ -88,9 +91,9 @@ def ask(payload: Question):
     except anthropic.RateLimitError:
         raise HTTPException(status_code=429, detail="Rate limited by the Claude API, try again")
     except anthropic.APIStatusError as e:
-        raise HTTPException(status_code=502, detail=f"Claude API error {e.status_code}")
+        raise HTTPException(status_code=500, detail=f"Claude API error {e.status_code}")
     except anthropic.APIConnectionError:
-        raise HTTPException(status_code=504, detail="Could not reach the Claude API")
+        raise HTTPException(status_code=500, detail="Could not reach the Claude API")
 
     answer = "".join(block.text for block in response.content if block.type == "text")
     return {

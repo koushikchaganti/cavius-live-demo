@@ -11,7 +11,8 @@
 
 | Thing | Value |
 | ----- | ----- |
-| Live URL | https://cavius-live-demo-2s5qa.ondigitalocean.app |
+| Live URL (UI) | https://cavius-live-demo-2s5qa.ondigitalocean.app |
+| Status JSON | https://cavius-live-demo-2s5qa.ondigitalocean.app/health |
 | GitHub repo | https://github.com/koushikchaganti/cavius-live-demo |
 | DO app ID | `2a683432-79e7-4f41-a01f-86a451d1aed9` |
 | DO account | Cavius Technologies (`doctl` context `default`) |
@@ -28,10 +29,15 @@ Every `doctl` command below needs `--context default`. The other context
 
 Do all of this **before** you walk in, not on stage.
 
-- [ ] `curl https://cavius-live-demo-2s5qa.ondigitalocean.app/` returns HTTP 200
-      **and** `"claude_key_configured": true` in the JSON. This one field is
-      your whole preflight for the AI endpoint and costs nothing to check.
-- [ ] `curl -X POST .../ask -d '{"question":"..."}'` returns a real answer
+- [ ] `curl https://cavius-live-demo-2s5qa.ondigitalocean.app/health` returns
+      `"claude_key_configured": true`. This one field is your whole preflight
+      for the AI endpoint and costs nothing to check.
+- [ ] Open the live URL in a browser. The key chip reads "Claude key
+      configured" in teal, and the **Ask Claude** button is enabled. If the
+      key is missing the button is deliberately disabled, so you cannot walk
+      into a failed request in front of the room.
+- [ ] Ask one question through the UI and confirm you get an answer plus the
+      token and cost metrics
 - [ ] Browser tabs open, in this order, left to right:
       1. GitHub repo, `main.py` open, ready to click Edit
       2. DigitalOcean app dashboard, Activity tab
@@ -102,9 +108,9 @@ works fine and the audience cannot tell the difference.
 
 ## The live demo, minute by minute
 
-**0:00 - Show the running product first.** Open the live URL. Point at the
-JSON. "This is a real API, running in a Bangalore data centre, about 200 km
-from this room. Seventy lines of Python."
+**0:00 - Show the running product first.** Open the live URL. It is a real
+page, not a JSON blob. "This is running in a Bangalore data centre, about
+200 km from this room. Seventy lines of Python and one HTML file."
 
 **0:01 - Show the code.** Terminal: `cat main.py`. Walk them through exactly
 three things and resist the urge to add a fourth:
@@ -114,7 +120,17 @@ three things and resist the urge to add a fourth:
   the source file. Say the sentence: "The moment you hard-code a key, you
   have shipped it to everyone who can read your repo."
 
-**0:03 - Call the AI endpoint.** Take a question shouted from the room. Then:
+**0:03 - Call the AI endpoint.** Take a question shouted from the room, type
+it into the box, and hit **Ask Claude** (or Cmd/Ctrl+Enter). While it thinks,
+say what is happening: the browser posts to your API, your API calls Claude,
+the answer comes back.
+
+When it lands, point at the four metrics under the answer. "Input tokens,
+output tokens, round trip, and the actual dollar cost of the question you
+just asked. That is your unit economics. Every AI product you will ever
+build is this number multiplied by your user count."
+
+If you would rather show the raw API too, the same call from a terminal:
 
 ```bash
 curl -s -X POST https://cavius-live-demo-2s5qa.ondigitalocean.app/ask \
@@ -122,8 +138,8 @@ curl -s -X POST https://cavius-live-demo-2s5qa.ondigitalocean.app/ask \
   -d '{"question": "THEIR QUESTION HERE"}' | python3 -m json.tool
 ```
 
-Point at `input_tokens` / `output_tokens`. "That is the bill. This request
-cost a fraction of a rupee. That is your unit economics."
+Worth saying: the UI and the curl hit the *same* endpoint. The browser is
+just one client.
 
 **0:06 - Now change it live.** Open `main.py` on GitHub, click the pencil, and
 change:
@@ -157,7 +173,8 @@ container with no downtime. "Nobody SSH'd into a server. Nobody copied a
 file. This is what deployment looks like in 2026."
 
 **0:10 - The payoff.** Build finishes in under two minutes. Reload the live
-URL. The new label is there. Let the room react.
+URL. The new label is there, in large type at the top of the page. Let the
+room react.
 
 **0:11 - Land the point.** "Between classroom and cloud there is no wall.
 There is a repo, a build, and a URL. Everything else you will learn - RLS,
@@ -192,10 +209,17 @@ doctl apps list-deployments 2a683432-79e7-4f41-a01f-86a451d1aed9 \
 
 and redeploy the last ACTIVE deployment from the dashboard.
 
-**If `/ask` returns 500 on stage:** The key is missing or the API is
-rate-limiting. Do not debug. Fall back to `GET /` for the redeploy demo,
-which does not touch the Claude API at all, and show the `/ask` response from
-your recording.
+**If `/ask` fails on stage:** The key is missing or the API is rate-limiting.
+The error appears in the answer area in red with the reason. Do not debug it
+live. The redeploy half of the demo does not touch the Claude API at all, so
+run that instead and show the answer from your recording.
+
+**A note on status codes**, in case you are asked or something looks odd:
+App Platform's edge intercepts 502, 503 and 504 responses from the app and
+replaces them with a generic DigitalOcean error page, so the JSON reason
+never reaches the browser. Every server-side error in this app therefore
+returns 500 with a readable `detail`. This is a genuinely good five-second
+aside about the difference between your app's errors and your platform's.
 
 ---
 
