@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cavius Live Demo &middot; SRIT Anantapur</title>
+<style>
+  /* Everything is inline on purpose. No CDN, no fonts to fetch, no build
+     step. If the venue wifi is bad, this page still renders. */
+  :root {
+    --navy:   #0A1730;
+    --navy-2: #0F2247;
+    --card:   #132B54;
+    --teal:   #24C4B0;
+    --purple: #8A6BFF;
+    --ink:    #EAF0FA;
+    --muted:  #93A7C7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 15% -10%, #17325F 0%, var(--navy) 55%) fixed;
+    color: var(--ink);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 28px 22px 64px; }
+
+  header { display: flex; align-items: baseline; justify-content: space-between;
+           flex-wrap: wrap; gap: 10px; padding-bottom: 22px; }
+  .brand { font-size: 15px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+           background: linear-gradient(90deg, var(--teal), var(--purple));
+           -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .event { font-size: 13.5px; color: var(--muted); letter-spacing: .04em; }
+
+  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.12; margin: 6px 0 10px;
+       letter-spacing: -0.02em; font-weight: 700; }
+  h1 .accent { background: linear-gradient(90deg, var(--teal), var(--purple));
+               -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); font-size: 17px; margin: 0 0 26px; max-width: 62ch; }
+
+  /* The live label. This is the thing that visibly changes on stage. */
+  .label-card { border: 1px solid rgba(36,196,176,.35); border-radius: 14px;
+                background: linear-gradient(180deg, rgba(36,196,176,.13), rgba(138,107,255,.07));
+                padding: 20px 22px; margin-bottom: 22px; }
+  .label-kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .14em;
+                  color: var(--teal); font-weight: 700; margin-bottom: 8px; }
+  #demoLabel { font-size: clamp(21px, 3.4vw, 30px); font-weight: 700; letter-spacing: -0.01em;
+               word-break: break-word; }
+  .label-note { font-size: 13.5px; color: var(--muted); margin-top: 10px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+         background: rgba(255,255,255,.09); padding: 2px 6px; border-radius: 5px; font-size: .92em; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+  .chip { font-size: 13px; padding: 6px 12px; border-radius: 999px;
+          border: 1px solid rgba(147,167,199,.3); color: var(--muted);
+          display: inline-flex; align-items: center; gap: 7px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+  .dot.ok   { background: var(--teal);  box-shadow: 0 0 0 3px rgba(36,196,176,.18); }
+  .dot.bad  { background: #FF6B6B; box-shadow: 0 0 0 3px rgba(255,107,107,.18); }
+
+  .panel { background: rgba(19,43,84,.62); border: 1px solid rgba(147,167,199,.18);
+           border-radius: 16px; padding: 22px; }
+  .panel h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .13em;
+              color: var(--muted); margin: 0 0 14px; font-weight: 700; }
+
+  textarea { width: 100%; min-height: 92px; resize: vertical; padding: 14px 16px;
+             border-radius: 11px; border: 1px solid rgba(147,167,199,.3);
+             background: rgba(10,23,48,.75); color: var(--ink);
+             font: inherit; font-size: 17px; }
+  textarea:focus { outline: none; border-color: var(--teal); }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
+  .preset { font-size: 13.5px; padding: 7px 13px; border-radius: 999px; cursor: pointer;
+            background: rgba(138,107,255,.14); border: 1px solid rgba(138,107,255,.4);
+            color: #CFC4FF; }
+  .preset:hover { background: rgba(138,107,255,.26); }
+
+  .row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  button.ask { font: inherit; font-size: 17px; font-weight: 650; cursor: pointer;
+               padding: 13px 26px; border-radius: 11px; border: none; color: #04121F;
+               background: linear-gradient(90deg, var(--teal), #6FE3D2); }
+  button.ask:hover { filter: brightness(1.07); }
+  button.ask:disabled { opacity: .55; cursor: not-allowed; filter: none; }
+  .hint { font-size: 13.5px; color: var(--muted); }
+
+  #answerWrap { margin-top: 22px; }
+  #answer { font-size: 19px; line-height: 1.62; white-space: pre-wrap; }
+  .metrics { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px;
+             padding-top: 16px; border-top: 1px solid rgba(147,167,199,.18); }
+  .metric { background: rgba(10,23,48,.6); border: 1px solid rgba(147,167,199,.18);
+            border-radius: 10px; padding: 9px 14px; }
+  .metric .k { font-size: 11.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .metric .v { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .err { color: #FFB4B4; font-size: 16px; }
+  .hidden { display: none; }
+
+  footer { margin-top: 34px; font-size: 13.5px; color: var(--muted); line-height: 1.9; }
+  footer a { color: var(--teal); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">Cavius Technologies</div>
+    <div class="event">SRIT Anantapur &middot; 28 Aug 2026</div>
+  </header>
+
+  <h1>From Classroom to <span class="accent">Cloud</span></h1>
+  <p class="sub">
+    About seventy lines of Python, running in a Bangalore data centre roughly
+    200&nbsp;km from this room. Every deploy is a <code>git push</code>.
+  </p>
+
+  <div class="label-card">
+    <div class="label-kicker">Live label</div>
+    <div id="demoLabel">loading&hellip;</div>
+    <div class="label-note">
+      This string is <code>DEMO_LABEL</code> in <code>main.py</code>. Watch it change
+      without anyone touching a server.
+    </div>
+  </div>
+
+  <div class="chips">
+    <span class="chip"><span class="dot ok"></span><span id="chipModel">model</span></span>
+    <span class="chip"><span class="dot ok"></span>Bangalore (blr)</span>
+    <span class="chip"><span class="dot" id="keyDot"></span><span id="chipKey">checking key&hellip;</span></span>
+  </div>
+
+  <div class="panel">
+    <h2>Ask Claude</h2>
+    <textarea id="q" placeholder="Ask anything. A question from the room works best."></textarea>
+    <div class="presets">
+      <span class="preset">What is agentic AI in one sentence?</span>
+      <span class="preset">Explain REST vs GraphQL to a 2nd year student.</span>
+      <span class="preset">Why do SaaS products need row level security?</span>
+      <span class="preset">What should I learn first to build a startup?</span>
+    </div>
+    <div class="row">
+      <button class="ask" id="go">Ask Claude</button>
+      <span class="hint" id="hint">Answers are capped at three sentences to keep this quick.</span>
+    </div>
+
+    <div id="answerWrap" class="hidden">
+      <div id="answer"></div>
+      <div class="metrics" id="metrics"></div>
+    </div>
+  </div>
+
+  <footer>
+    Source: <a href="https://github.com/koushikchaganti/cavius-live-demo" target="_blank" rel="noopener">github.com/koushikchaganti/cavius-live-demo</a><br>
+    Built for the CSE guest seminar, in association with IIC and IEI.
+  </footer>
+
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  // Pull the label and status from the API, so the page reflects the
+  // deployment it is actually served from.
+  async function loadStatus() {
+    try {
+      const r = await fetch('/health');
+      const d = await r.json();
+      $('demoLabel').textContent = d.demo_label;
+      $('chipModel').textContent = d.model;
+      const ok = d.claude_key_configured;
+      $('keyDot').className = 'dot ' + (ok ? 'ok' : 'bad');
+      $('chipKey').textContent = ok ? 'Claude key configured' : 'Claude key missing';
+      if (!ok) {
+        $('go').disabled = true;
+        $('hint').textContent = 'ANTHROPIC_API_KEY is not set on this deployment.';
+      }
+    } catch (e) {
+      $('demoLabel').textContent = 'could not reach the API';
+    }
+  }
+
+  document.querySelectorAll('.preset').forEach(p => {
+    p.addEventListener('click', () => { $('q').value = p.textContent.trim(); $('q').focus(); });
+  });
+
+  async function ask() {
+    const question = $('q').value.trim();
+    if (!question) { $('q').focus(); return; }
+
+    $('go').disabled = true;
+    $('go').textContent = 'Thinking…';
+    $('answerWrap').classList.remove('hidden');
+    $('answer').textContent = '';
+    $('answer').className = '';
+    $('metrics').innerHTML = '';
+
+    const t0 = performance.now();
+    try {
+      const r = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      });
+      const ms = Math.round(performance.now() - t0);
+      const d = await r.json();
+
+      if (!r.ok) {
+        $('answer').className = 'err';
+        $('answer').textContent = 'Error ' + r.status + ': ' + (d.detail || 'request failed');
+        return;
+      }
+
+      $('answer').textContent = d.answer;
+
+      // $5 / $25 per million tokens for claude-opus-5. Showing the bill is
+      // the whole point: students should see that inference has a price.
+      const usd = (d.input_tokens * 5 + d.output_tokens * 25) / 1e6;
+      const metric = (k, v) => `<div class="metric"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+      $('metrics').innerHTML =
+        metric('Input tokens',  d.input_tokens) +
+        metric('Output tokens', d.output_tokens) +
+        metric('Round trip',    ms + ' ms') +
+        metric('Cost',          '$' + usd.toFixed(5));
+    } catch (e) {
+      $('answer').className = 'err';
+      $('answer').textContent = 'Network error: ' + e.message;
+    } finally {
+      $('go').disabled = false;
+      $('go').textContent = 'Ask Claude';
+    }
+  }
+
+  $('go').addEventListener('click', ask);
+  // Cmd/Ctrl+Enter sends, so you are not hunting for the mouse on stage.
+  $('q').addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') ask();
+  });
+
+  loadStatus();
+</script>
+</body>
+</html>

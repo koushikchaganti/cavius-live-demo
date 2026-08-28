@@ -6,8 +6,9 @@ A minimal FastAPI app with one AI-powered endpoint, built for a live
 deploy-on-stage demo to DigitalOcean App Platform.
 
 Routes:
-  GET  /       -> health check (shows DEMO_LABEL)
-  POST /ask    -> takes a question, returns a Claude-generated answer
+  GET  /        -> the demo UI (single HTML page, no build step)
+  GET  /health  -> JSON status, including whether the API key is configured
+  POST /ask     -> takes a question, returns a Claude-generated answer
 
 DEMO TIP: change DEMO_LABEL below during the live session, commit, and
 push. DigitalOcean App Platform auto-redeploys in ~2 min. Reload "/" on
@@ -15,9 +16,11 @@ stage to show the change go live.
 """
 
 import os
+from pathlib import Path
 
 import anthropic
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 app = FastAPI(title="Cavius Live Demo")
@@ -35,15 +38,25 @@ API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
 client = anthropic.Anthropic(api_key=API_KEY) if API_KEY else None
 
 
+# Read the page once at startup rather than on every request.
+INDEX_HTML = (Path(__file__).parent / "static" / "index.html").read_text()
+
+
 class Question(BaseModel):
     question: str
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return INDEX_HTML
+
+
+@app.get("/health")
 def health_check():
     return {
         "status": "ok",
         "message": f"Cavius live demo is running on DigitalOcean App Platform - {DEMO_LABEL}",
+        "demo_label": DEMO_LABEL,
         "model": MODEL,
         # Lets you confirm the secret is wired without spending a token.
         "claude_key_configured": client is not None,
