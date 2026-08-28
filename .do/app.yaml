@@ -1,0 +1,24 @@
+# DigitalOcean App Platform spec for the SRIT Anantapur live demo.
+# Create:  doctl apps create --spec .do/app.yaml
+# Update:  doctl apps update <APP_ID> --spec .do/app.yaml
+# NOTE: ANTHROPIC_API_KEY has no value here on purpose. Never commit a key.
+#       Set it in the DO dashboard, or pass a spec copy that has the value.
+name: cavius-live-demo
+region: blr
+services:
+  - name: api
+    github:
+      repo: koushikchaganti/cavius-live-demo
+      branch: main
+      deploy_on_push: true
+    environment_slug: python
+    run_command: uvicorn main:app --host 0.0.0.0 --port 8080
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    envs:
+      - key: ANTHROPIC_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+    health_check:
+      http_path: /
