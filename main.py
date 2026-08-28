@@ -91,7 +91,13 @@ def ask(payload: Question):
     except anthropic.RateLimitError:
         raise HTTPException(status_code=429, detail="Rate limited by the Claude API, try again")
     except anthropic.APIStatusError as e:
-        raise HTTPException(status_code=500, detail=f"Claude API error {e.status_code}")
+        # Surface the API's own message. This is a teaching demo, not a
+        # hardened product: a readable error on screen beats a mystery.
+        print(f"Claude API error {e.status_code}: {e.message}", flush=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Claude API error {e.status_code}: {e.message}",
+        )
     except anthropic.APIConnectionError:
         raise HTTPException(status_code=500, detail="Could not reach the Claude API")
 
