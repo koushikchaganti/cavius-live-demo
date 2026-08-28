@@ -24,34 +24,34 @@
     font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 940px; margin: 0 auto; padding: 28px 22px 64px; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 22px 22px 56px; }
 
   header { display: flex; align-items: baseline; justify-content: space-between;
-           flex-wrap: wrap; gap: 10px; padding-bottom: 22px; }
+           flex-wrap: wrap; gap: 10px; padding-bottom: 16px; }
   .brand { font-size: 15px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
            background: linear-gradient(90deg, var(--teal), var(--purple));
            -webkit-background-clip: text; background-clip: text; color: transparent; }
   .event { font-size: 13.5px; color: var(--muted); letter-spacing: .04em; }
 
-  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.12; margin: 6px 0 10px;
+  h1 { font-size: clamp(28px, 4.4vw, 40px); line-height: 1.12; margin: 2px 0 8px;
        letter-spacing: -0.02em; font-weight: 700; }
   h1 .accent { background: linear-gradient(90deg, var(--teal), var(--purple));
                -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .sub { color: var(--muted); font-size: 17px; margin: 0 0 26px; max-width: 62ch; }
+  .sub { color: var(--muted); font-size: 16.5px; margin: 0 0 20px; max-width: 66ch; }
 
   /* The live label. This is the thing that visibly changes on stage. */
   .label-card { border: 1px solid rgba(36,196,176,.35); border-radius: 14px;
                 background: linear-gradient(180deg, rgba(36,196,176,.13), rgba(138,107,255,.07));
-                padding: 20px 22px; margin-bottom: 22px; }
+                padding: 17px 20px; margin-bottom: 18px; }
   .label-kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .14em;
                   color: var(--teal); font-weight: 700; margin-bottom: 8px; }
-  #demoLabel { font-size: clamp(21px, 3.4vw, 30px); font-weight: 700; letter-spacing: -0.01em;
+  #demoLabel { font-size: clamp(20px, 3.1vw, 28px); font-weight: 700; letter-spacing: -0.01em;
                word-break: break-word; }
   .label-note { font-size: 13.5px; color: var(--muted); margin-top: 10px; }
   code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
          background: rgba(255,255,255,.09); padding: 2px 6px; border-radius: 5px; font-size: .92em; }
 
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
   .chip { font-size: 13px; padding: 6px 12px; border-radius: 999px;
           border: 1px solid rgba(147,167,199,.3); color: var(--muted);
           display: inline-flex; align-items: center; gap: 7px; }
@@ -64,13 +64,13 @@
   .panel h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .13em;
               color: var(--muted); margin: 0 0 14px; font-weight: 700; }
 
-  textarea { width: 100%; min-height: 92px; resize: vertical; padding: 14px 16px;
+  textarea { width: 100%; min-height: 76px; resize: vertical; padding: 14px 16px;
              border-radius: 11px; border: 1px solid rgba(147,167,199,.3);
              background: rgba(10,23,48,.75); color: var(--ink);
              font: inherit; font-size: 17px; }
   textarea:focus { outline: none; border-color: var(--teal); }
 
-  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 11px 0 14px; }
   .preset { font-size: 13.5px; padding: 7px 13px; border-radius: 999px; cursor: pointer;
             background: rgba(138,107,255,.14); border: 1px solid rgba(138,107,255,.4);
             color: #CFC4FF; }
@@ -111,15 +111,16 @@
   <h1>From Classroom to <span class="accent">Cloud</span></h1>
   <p class="sub">
     About seventy lines of Python, running in a Bangalore data centre roughly
-    200&nbsp;km from this room. Every deploy is a <code>git push</code>.
+    200&nbsp;km from this room. A single <code>git push</code> is the entire
+    deploy process.
   </p>
 
   <div class="label-card">
     <div class="label-kicker">Live label</div>
     <div id="demoLabel">loading&hellip;</div>
     <div class="label-note">
-      This string is <code>DEMO_LABEL</code> in <code>main.py</code>. Watch it change
-      without anyone touching a server.
+      The <code>DEMO_LABEL</code> string in <code>main.py</code> sets this line.
+      Watch it change without anyone touching a server.
     </div>
   </div>
 
@@ -136,7 +137,6 @@
       <span class="preset">What is agentic AI in one sentence?</span>
       <span class="preset">Explain REST vs GraphQL to a 2nd year student.</span>
       <span class="preset">Why do SaaS products need row level security?</span>
-      <span class="preset">What should I learn first to build a startup?</span>
     </div>
     <div class="row">
       <button class="ask" id="go">Ask Claude</button>
@@ -211,6 +211,7 @@
       }
 
       $('answer').textContent = d.answer;
+      $('answerWrap').scrollIntoView({ behavior: 'smooth', block: 'end' });
 
       // $5 / $25 per million tokens for claude-opus-5. Showing the bill is
       // the whole point: students should see that inference has a price.
