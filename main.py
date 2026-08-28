@@ -27,9 +27,12 @@ DEMO_LABEL = "Live from SRIT Anantapur"
 
 MODEL = "claude-opus-5"
 
-# The SDK reads ANTHROPIC_API_KEY from the environment. On DigitalOcean it is
-# set as an encrypted (SECRET) env var. Never hard-code a key in source.
-client = anthropic.Anthropic()
+# The key comes from the environment. On DigitalOcean it is set as an
+# encrypted (SECRET) env var. Never hard-code a key in source.
+# .strip() matters: a trailing newline pasted into a dashboard field is a
+# real and very annoying way to lose an afternoon.
+API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+client = anthropic.Anthropic(api_key=API_KEY) if API_KEY else None
 
 
 class Question(BaseModel):
@@ -42,6 +45,8 @@ def health_check():
         "status": "ok",
         "message": f"Cavius live demo is running on DigitalOcean App Platform - {DEMO_LABEL}",
         "model": MODEL,
+        # Lets you confirm the secret is wired without spending a token.
+        "claude_key_configured": client is not None,
     }
 
 
@@ -49,6 +54,12 @@ def health_check():
 def ask(payload: Question):
     if not payload.question.strip():
         raise HTTPException(status_code=400, detail="question must not be empty")
+
+    if client is None:
+        raise HTTPException(
+            status_code=503,
+            detail="ANTHROPIC_API_KEY is not set on this deployment",
+        )
 
     try:
         response = client.messages.create(

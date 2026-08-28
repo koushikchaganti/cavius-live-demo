@@ -29,8 +29,9 @@ Every `doctl` command below needs `--context default`. The other context
 Do all of this **before** you walk in, not on stage.
 
 - [ ] `curl https://cavius-live-demo-2s5qa.ondigitalocean.app/` returns HTTP 200
+      **and** `"claude_key_configured": true` in the JSON. This one field is
+      your whole preflight for the AI endpoint and costs nothing to check.
 - [ ] `curl -X POST .../ask -d '{"question":"..."}'` returns a real answer
-      (this fails until `ANTHROPIC_API_KEY` is set - see "Set the key" below)
 - [ ] Browser tabs open, in this order, left to right:
       1. GitHub repo, `main.py` open, ready to click Edit
       2. DigitalOcean app dashboard, Activity tab
